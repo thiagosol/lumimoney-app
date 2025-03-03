@@ -13,11 +13,10 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
- @override
+  @override
   void initState() {
     super.initState();
 
@@ -33,76 +32,117 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authNotifier = ref.read(authProvider.notifier);
 
     ref.listen(authProvider, (previous, next) {
-      if (previous?.isLoading == true && next.isLoading == false && next.user != null) {
+      if (previous?.isLoading == true &&
+          next.isLoading == false &&
+          next.user != null) {
         context.go('/home');
       } else if (next.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error!)));
       }
     });
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "LumiMoney",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF6A5ACD)),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: "E-mail"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Senha"),
-            ),
-            const SizedBox(height: 24),
-            authState.isLoading
-                ? const CircularProgressIndicator()
-                : Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          authNotifier.login(emailController.text, passwordController.text);
-                        },
-                        child: const Text("Entrar"),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final googleSignIn = GoogleSignIn(
-                            clientId: kIsWeb ? '267276050562-6olehn76rf4t03ap7m2gu3987id3q6k3.apps.googleusercontent.com' : null,
-                            scopes: ['email', 'profile', 'openid'],
-                          );
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          final formWidth = isMobile ? double.infinity : 400.0;
 
-                          final googleUser = await googleSignIn.signIn();
-                          if (googleUser == null) return;
-
-                          final auth = await googleUser.authentication;
-                          final accessToken = auth.accessToken;
-
-                          if (accessToken != null) {
-                            ref.read(authProvider.notifier).loginWithGoogle(googleUser.email, accessToken);
-                          }
-                        },
-                        icon: Image.asset('assets/google_logo.png', height: 24),
-                        label: const Text('Entrar com Google'),
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              width: formWidth,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "LumiMoney",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6A5ACD),
                       ),
-                      TextButton(
-                        onPressed: () => context.push("/register"),
-                        child: const Text("Criar conta"),
-                      ),
-                    ],
-                  ),
-          ],
-        ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(labelText: "E-mail"),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: "Senha"),
+                    ),
+                    const SizedBox(height: 24),
+                    authState.isLoading
+                        ? const CircularProgressIndicator()
+                        : Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  authNotifier.login(
+                                    emailController.text,
+                                    passwordController.text,
+                                  );
+                                },
+                                child: const Text("Entrar"),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  final googleSignIn = GoogleSignIn(
+                                    clientId:
+                                        kIsWeb
+                                            ? '267276050562-6olehn76rf4t03ap7m2gu3987id3q6k3.apps.googleusercontent.com'
+                                            : null,
+                                    scopes: ['email', 'profile', 'openid'],
+                                  );
+
+                                  final googleUser =
+                                      await googleSignIn.signIn();
+                                  if (googleUser == null) return;
+
+                                  final auth = await googleUser.authentication;
+                                  final accessToken = auth.accessToken;
+
+                                  if (accessToken != null) {
+                                    ref
+                                        .read(authProvider.notifier)
+                                        .loginWithGoogle(
+                                          googleUser.email,
+                                          accessToken,
+                                        );
+                                  }
+                                },
+                                icon: Image.asset(
+                                  'assets/google_logo.png',
+                                  height: 24,
+                                ),
+                                label: const Text('Entrar com Google'),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => context.push("/register"),
+                              child: const Text("Criar conta"),
+                            ),
+                          ],
+                        ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
