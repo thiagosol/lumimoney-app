@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:lumimoney_app/core/global_event_bus.dart';
 import 'package:lumimoney_app/features/auth/providers/auth_provider.dart';
-import 'core/router.dart';
-import 'core/theme.dart';
+import 'package:lumimoney_app/core/router.dart';
+import 'package:lumimoney_app/core/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,13 @@ void main() async {
   final container = ProviderContainer();
 
   await container.read(authProvider.notifier).loadUserFromStorage();
+
+  globalEventBus.on<String>().listen((event) {
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context != null && event == GlobalEvent.loggedOut) {
+      router.pushReplacement('/login');
+    }
+  });
 
   runApp(
     UncontrolledProviderScope(

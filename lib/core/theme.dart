@@ -13,6 +13,7 @@ class AppTheme {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF6A5ACD),
             foregroundColor: Colors.white,
+            iconColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),

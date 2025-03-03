@@ -1,11 +1,38 @@
 import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
 import 'package:lumimoney_app/core/exceptions/app_exception.dart';
 import 'package:lumimoney_app/core/config.dart';
+import 'package:lumimoney_app/core/global_event_bus.dart';
 
-class HttpClientService {
+class AppHttpClient {
   final Dio _dio = Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl));
 
-  HttpClientService();
+  AppHttpClient() {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final skipAuth =
+              options.path.contains('/auth/login') ||
+              options.path.contains('/auth/register');
+
+          if (!skipAuth) {
+            final token = await _getToken();
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          }
+
+          handler.next(options);
+        },
+        onError: (DioException e, handler) {
+          if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+            _handleUnauthorized();
+          }
+          handler.next(e);
+        },
+      ),
+    );
+  }
 
   Future<Response> post(String path, {Map<String, dynamic>? data}) async {
     return _handleRequest(() => _dio.post(path, data: data));
@@ -29,7 +56,7 @@ class HttpClientService {
     } on DioException catch (e) {
       throw AppException(_extractErrorMessage(e), e);
     } on Exception catch (e) {
-      throw AppException("Erro inesperado ao realizar a requisição.", e);
+      throw AppException('Erro inesperado ao realizar a requisição.', e);
     }
   }
 
@@ -40,6 +67,16 @@ class HttpClientService {
         return data['message'].toString();
       }
     }
-    return "Erro inesperado ao realizar a requisição";
+    return 'Erro inesperado ao realizar a requisição';
+  }
+
+  void _handleUnauthorized() {
+    Hive.box('userBox').clear();
+    globalEventBus.fire(GlobalEvent.loggedOut);
+  }
+
+  Future<String?> _getToken() async {
+    final box = await Hive.openBox('userBox');
+    return box.get('token') as String?;
   }
 }

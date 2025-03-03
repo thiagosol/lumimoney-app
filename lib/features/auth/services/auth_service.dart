@@ -1,39 +1,39 @@
 import 'package:lumimoney_app/core/exceptions/app_exception.dart';
-import 'package:lumimoney_app/core/service/http_client_service.dart';
+import 'package:lumimoney_app/core/app_http_client.dart';
 
 class AuthService {
-  final HttpClientService _http = HttpClientService();
+  final AppHttpClient _http = AppHttpClient();
 
   Future<String> login(String email, String password) async {
     final response = await _http.post('/auth/login', data: {
-      "email": email,
-      "password": password,
-    });
+      'email': email,
+      'password': password,
+    },);
 
     if (response.statusCode != 200) {
-      throw AppException("Erro ao fazer login");
+      throw AppException('Erro ao fazer login');
     }
     return response.data['token'];
   }
 
   register(String email, String password) async {
     final response = await _http.post('/auth/register', data: {
-      "email": email,
-      "password": password,
-    });
+      'email': email,
+      'password': password,
+    },);
 
     if (response.statusCode != 201) {
-      throw AppException("Erro ao registrar usuário");
+      throw AppException('Erro ao registrar usuário');
     }
   }
 
   Future<String> loginWithGoogle(String googleAccessToken) async {
     final response = await _http.post('/auth/google', data: {
-      "token": googleAccessToken,
-    });
+      'token': googleAccessToken,
+    },);
 
     if (response.statusCode != 200) {
-      throw AppException("Erro ao logar com Google");
+      throw AppException('Erro ao logar com Google');
     }
 
     return response.data['token'];

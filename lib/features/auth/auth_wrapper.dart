@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'providers/auth_provider.dart';
+import 'package:lumimoney_app/features/auth/providers/auth_provider.dart';
 
 class AuthWrapper extends ConsumerWidget {
   final Widget child;
