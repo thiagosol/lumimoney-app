@@ -1,14 +1,16 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class UserModel {
+  final String email;
+  final String? token;
 
-part 'user.freezed.dart';
-part 'user.g.dart';
+  UserModel({
+    required this.email,
+    this.token,
+  });
 
-@freezed
-class UserModel with _$UserModel {
-  factory UserModel({
-    required String email,
-    String? token,
-  }) = _UserModel;
-
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      email: json['email'] as String,
+      token: json['token'] as String?,
+    );
+  }
 }
