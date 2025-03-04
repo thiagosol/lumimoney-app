@@ -31,7 +31,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.data['token'] == null) {
-        throw AppException(response.data['message'] ?? 'Falha ao realizar login');
+        throw AppException(
+            response.data['message'] ?? 'Falha ao realizar login');
       }
 
       final token = response.data['token'] as String;
@@ -53,17 +54,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> register(String email, String password) async {
     try {
-      final response = await client.post(
+      await client.post(
         ApiEndpoints.register,
         data: {
           'email': email,
           'password': password,
         },
       );
-
-      if (response.statusCode != 201) {
-        throw AppException(response.data['message'] ?? 'Falha ao realizar cadastro');
-      }
     } on AppException {
       rethrow;
     } catch (e) {
@@ -79,7 +76,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw AppException('Login com Google cancelado');
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final response = await client.post(
         ApiEndpoints.googleLogin,
         data: {
@@ -88,7 +86,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.data['token'] == null) {
-        throw AppException(response.data['message'] ?? 'Falha ao realizar login com Google');
+        throw AppException(
+            response.data['message'] ?? 'Falha ao realizar login com Google');
       }
 
       final token = response.data['token'] as String;
