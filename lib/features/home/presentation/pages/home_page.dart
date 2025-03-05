@@ -35,7 +35,19 @@ class _HomePageState extends ConsumerState<HomePage> {
         .toList();
 
     return Scaffold(
-      body: SafeArea(
+      appBar: AppBar(
+        title: const Text('LumiMoney'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(paymentMethodsControllerProvider.notifier).getPaymentMethods();
+        },
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(

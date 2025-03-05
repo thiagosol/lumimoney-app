@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method_request.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/controllers/payment_methods_controller.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class AddCardPage extends ConsumerStatefulWidget {
   const AddCardPage({super.key});
@@ -14,139 +15,196 @@ class AddCardPage extends ConsumerStatefulWidget {
 class _AddCardPageState extends ConsumerState<AddCardPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _limitController = TextEditingController(text: '0,00');
   final _dueDayController = TextEditingController();
   final _closingDayController = TextEditingController();
-  final _limitController = TextEditingController();
+  
+  final _dayMask = MaskTextInputFormatter(
+    mask: '##',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
 
   @override
   void dispose() {
     _nameController.dispose();
+    _limitController.dispose();
     _dueDayController.dispose();
     _closingDayController.dispose();
-    _limitController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  String _getLimitValue() {
+    final value = _limitController.text
+        .replaceAll('.', '')
+        .replaceAll(',', '.');
+    return value;
+  }
 
-    final request = CreditCardRequest(
-      name: _nameController.text,
-      dueDayOfMonth: int.parse(_dueDayController.text),
-      closingDayOfMonth: int.parse(_closingDayController.text),
-      creditLimit: double.parse(_limitController.text),
-    );
-
-    await ref.read(paymentMethodsControllerProvider.notifier).createPaymentMethod(request);
-    
-    if (mounted) {
-      context.pop();
+  void _formatMoney(String value) {
+    if (value.isEmpty) {
+      _limitController.text = '0,00';
+      _limitController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _limitController.text.length),
+      );
+      return;
     }
+
+    // Remove todos os caracteres não numéricos
+    final numbers = value.replaceAll(RegExp(r'[^\d]'), '');
+    
+    // Se não tiver números, mantém 0,00
+    if (numbers.isEmpty) {
+      _limitController.text = '0,00';
+      _limitController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _limitController.text.length),
+      );
+      return;
+    }
+
+    // Converte para inteiro
+    final amount = int.parse(numbers);
+    
+    // Formata o valor
+    final formatted = (amount / 100).toStringAsFixed(2);
+    final parts = formatted.split('.');
+    
+    // Adiciona os pontos para milhares
+    final wholePart = parts[0].replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+    
+    final newText = '$wholePart,${parts[1]}';
+    _limitController.text = newText;
+    _limitController.selection = TextSelection.fromPosition(
+      TextPosition(offset: newText.length),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(paymentMethodsControllerProvider);
+    final paymentMethodsState = ref.watch(paymentMethodsControllerProvider);
+    final isWeb = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Adicionar Cartão'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nome do Cartão',
-                border: OutlineInputBorder(),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: isWeb ? const BoxConstraints(maxWidth: 400) : null,
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome do Cartão',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o nome do cartão';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _limitController,
+                    decoration: const InputDecoration(
+                      labelText: 'Limite do Cartão',
+                      border: OutlineInputBorder(),
+                      prefixText: 'R\$ ',
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: _formatMoney,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o limite do cartão';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _dueDayController,
+                    decoration: const InputDecoration(
+                      labelText: 'Dia de Vencimento (1-31)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [_dayMask],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o dia de vencimento';
+                      }
+                      final day = int.tryParse(value);
+                      if (day == null || day < 1 || day > 31) {
+                        return 'O dia deve estar entre 1 e 31';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _closingDayController,
+                    decoration: const InputDecoration(
+                      labelText: 'Dia de Fechamento (1-31)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [_dayMask],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, insira o dia de fechamento';
+                      }
+                      final day = int.tryParse(value);
+                      if (day == null || day < 1 || day > 31) {
+                        return 'O dia deve estar entre 1 e 31';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: paymentMethodsState.isLoading
+                          ? null
+                          : () async {
+                              if (_formKey.currentState!.validate()) {
+                                await ref
+                                    .read(paymentMethodsControllerProvider.notifier)
+                                    .addCard(
+                                      _nameController.text,
+                                      double.parse(_getLimitValue()),
+                                      int.parse(_dueDayController.text),
+                                      int.parse(_closingDayController.text),
+                                    );
+                                if (mounted) {
+                                  await ref
+                                      .read(paymentMethodsControllerProvider.notifier)
+                                      .getPaymentMethods();
+                                  if (mounted) {
+                                    context.pop();
+                                  }
+                                }
+                              }
+                            },
+                      child: paymentMethodsState.isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text('Adicionar Cartão'),
+                    ),
+                  ),
+                ],
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira o nome do cartão';
-                }
-                return null;
-              },
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _dueDayController,
-              decoration: const InputDecoration(
-                labelText: 'Dia do Vencimento',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira o dia do vencimento';
-                }
-                final number = int.tryParse(value);
-                if (number == null || number < 1 || number > 31) {
-                  return 'Por favor, insira um dia válido (1-31)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _closingDayController,
-              decoration: const InputDecoration(
-                labelText: 'Dia do Fechamento',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira o dia do fechamento';
-                }
-                final number = int.tryParse(value);
-                if (number == null || number < 1 || number > 31) {
-                  return 'Por favor, insira um dia válido (1-31)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _limitController,
-              decoration: const InputDecoration(
-                labelText: 'Limite do Cartão',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira o limite do cartão';
-                }
-                final number = double.tryParse(value);
-                if (number == null || number <= 0) {
-                  return 'Por favor, insira um valor válido';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: state.isLoading ? null : _submit,
-              child: state.isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Criar Cartão'),
-            ),
-            if (state.error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(
-                  state.error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

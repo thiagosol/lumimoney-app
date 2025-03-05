@@ -40,6 +40,51 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
       state = PaymentMethodsState.error(e.toString());
     }
   }
+
+  Future<void> addAccount(String name, double initialBalance) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final request = AccountRequest(
+        name: name,
+        initialBalance: initialBalance,
+      );
+      await repository.createPaymentMethod(request);
+      await getPaymentMethods();
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> addCard(
+    String name,
+    double creditLimit,
+    int dueDay,
+    int closingDay,
+  ) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final request = CreditCardRequest(
+        name: name,
+        dueDayOfMonth: dueDay,
+        closingDayOfMonth: closingDay,
+        creditLimit: creditLimit,
+      );
+      await repository.createPaymentMethod(request);
+      await getPaymentMethods();
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
 }
 
 class PaymentMethodsState {
@@ -77,4 +122,16 @@ class PaymentMethodsState {
           error: error,
           paymentMethods: const [],
         );
+
+  PaymentMethodsState copyWith({
+    bool? isLoading,
+    String? error,
+    List<PaymentMethod>? paymentMethods,
+  }) {
+    return PaymentMethodsState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+      paymentMethods: paymentMethods ?? this.paymentMethods,
+    );
+  }
 }
