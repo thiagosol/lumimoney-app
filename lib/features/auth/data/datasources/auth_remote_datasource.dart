@@ -6,9 +6,9 @@ import 'package:lumimoney_app/core/exceptions/app_exception.dart';
 import 'package:lumimoney_app/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login(String email, String password);
+  Future<String> login(String email, String password);
   Future<void> register(String email, String password);
-  Future<UserModel> loginWithGoogle();
+  Future<String> loginWithGoogle();
   Future<UserModel> getCurrentUser();
 }
 
@@ -20,7 +20,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       : _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   @override
-  Future<UserModel> login(String email, String password) async {
+  Future<String> login(String email, String password) async {
     try {
       final response = await client.post(
         ApiEndpoints.login,
@@ -32,18 +32,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       if (response.data['token'] == null) {
         throw AppException(
-            response.data['message'] ?? 'Falha ao realizar login');
+            response.data['message'] ?? 'Falha ao realizar login',);
       }
-
-      final token = response.data['token'] as String;
-      final userResponse = await client.get(
-        ApiEndpoints.me,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-
-      return UserModel.fromJson(userResponse.data, token: token);
+      return response.data['token'] as String;
     } on AppException {
       rethrow;
     } catch (e) {
@@ -69,7 +60,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> loginWithGoogle() async {
+  Future<String> loginWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -87,18 +78,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       if (response.data['token'] == null) {
         throw AppException(
-            response.data['message'] ?? 'Falha ao realizar login com Google');
+            response.data['message'] ?? 'Falha ao realizar login com Google',);
       }
 
-      final token = response.data['token'] as String;
-      final userResponse = await client.get(
-        ApiEndpoints.me,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-
-      return UserModel.fromJson(userResponse.data, token: token);
+      return response.data['token'] as String;
     } on AppException {
       rethrow;
     } catch (e) {

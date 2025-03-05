@@ -33,9 +33,12 @@ class AppHttpClient {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await SecureStorage.getToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    final isAuthRoute = _isAuthenticationRoute(options.path);
+    if (!isAuthRoute) {
+      final token = await SecureStorage.getToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }

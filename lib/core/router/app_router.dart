@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lumimoney_app/features/auth/presentation/pages/login_page.dart';
 import 'package:lumimoney_app/features/auth/presentation/pages/register_page.dart';
 import 'package:lumimoney_app/features/auth/presentation/widgets/auth_wrapper.dart';
 import 'package:lumimoney_app/features/home/presentation/pages/home_page.dart';
+import 'package:lumimoney_app/features/payment_methods/presentation/pages/add_account_page.dart';
+import 'package:lumimoney_app/features/payment_methods/presentation/pages/add_card_page.dart';
 import 'package:lumimoney_app/shared/constants/app_constants.dart';
 
 final appRouter = GoRouter(
@@ -26,19 +27,11 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: AppConstants.addAccountRoute,
-          builder: (context, state) => const Scaffold(
-            body: Center(
-              child: Text('Adicionar Conta'),
-            ),
-          ),
+          builder: (context, state) => const AddAccountPage(),
         ),
         GoRoute(
           path: AppConstants.addCardRoute,
-          builder: (context, state) => const Scaffold(
-            body: Center(
-              child: Text('Adicionar Cartão'),
-            ),
-          ),
+          builder: (context, state) => const AddCardPage(),
         ),
       ],
     ),

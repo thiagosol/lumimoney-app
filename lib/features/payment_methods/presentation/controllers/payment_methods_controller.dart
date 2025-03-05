@@ -3,6 +3,7 @@ import 'package:lumimoney_app/core/network/http_client.dart';
 import 'package:lumimoney_app/features/payment_methods/data/datasources/payment_methods_remote_datasource.dart';
 import 'package:lumimoney_app/features/payment_methods/data/repositories/payment_methods_repository_impl.dart';
 import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method.dart';
+import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method_request.dart';
 
 final paymentMethodsControllerProvider =
     StateNotifierProvider<PaymentMethodsController, PaymentMethodsState>((ref) {
@@ -24,6 +25,17 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
     try {
       final paymentMethods = await repository.getPaymentMethods();
       state = PaymentMethodsState.success(paymentMethods);
+    } catch (e) {
+      state = PaymentMethodsState.error(e.toString());
+    }
+  }
+
+  Future<void> createPaymentMethod(PaymentMethodRequest request) async {
+    state = const PaymentMethodsState.loading();
+
+    try {
+      final paymentMethod = await repository.createPaymentMethod(request);
+      state = PaymentMethodsState.success([...state.paymentMethods, paymentMethod]);
     } catch (e) {
       state = PaymentMethodsState.error(e.toString());
     }

@@ -10,9 +10,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login(String email, String password) async {
-    final userModel = await remoteDataSource.login(email, password);
-    await SecureStorage.saveToken(userModel.token);
-    return userModel;
+    final token = await remoteDataSource.login(email, password);
+    await SecureStorage.saveToken(token);
+    return await remoteDataSource.getCurrentUser();
   }
 
   @override
@@ -36,8 +36,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> loginWithGoogle() async {
-    final userModel = await remoteDataSource.loginWithGoogle();
-    await SecureStorage.saveToken(userModel.token);
-    return userModel;
+    final token = await remoteDataSource.loginWithGoogle();
+    await SecureStorage.saveToken(token);
+    return await remoteDataSource.getCurrentUser();
   }
 }
