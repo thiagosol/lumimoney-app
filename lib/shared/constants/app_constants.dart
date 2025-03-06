@@ -13,8 +13,9 @@ class AppConstants {
   static const String loginRoute = '/login';
   static const String registerRoute = '/register';
   static const String transactionsRoute = '/transactions';
-  static const String addAccountRoute = '/accounts/new';
-  static const String addCardRoute = '/cards/new';
+  static const String addAccountRoute = '/add-account';
+  static const String addCardRoute = '/add-card';
+  static const String addTransactionRoute = '/add-transaction';
 
   // Formatação
   static const String dateFormat = 'dd/MM/yyyy';

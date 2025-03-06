@@ -6,6 +6,7 @@ import 'package:lumimoney_app/features/auth/presentation/controllers/auth_contro
 import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/controllers/payment_methods_controller.dart';
 import 'package:lumimoney_app/shared/constants/app_constants.dart';
+import 'package:lumimoney_app/features/transactions/presentation/pages/transactions_test_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -40,7 +41,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+            onPressed: () {
+              ref.read(authControllerProvider.notifier).logout();
+              context.go(AppConstants.loginRoute);
+            },
           ),
         ],
       ),
@@ -71,9 +75,29 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onAddPressed: () => context.push(AppConstants.addCardRoute),
                 child: _buildCreditCardsList(creditCards),
               ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TransactionsTestPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.list),
+                label: const Text('Teste de Transações'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push(AppConstants.addTransactionRoute),
+        child: const Icon(Icons.add),
       ),
     );
   }

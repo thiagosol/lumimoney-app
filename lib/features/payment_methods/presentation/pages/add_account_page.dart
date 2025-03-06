@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lumimoney_app/core/utils/money_formatter.dart';
-import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method_request.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/controllers/payment_methods_controller.dart';
 import 'package:lumimoney_app/shared/widgets/money_text_field.dart';
 

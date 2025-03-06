@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method_request.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/controllers/payment_methods_controller.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -21,7 +20,7 @@ class _AddCardPageState extends ConsumerState<AddCardPage> {
   
   final _dayMask = MaskTextInputFormatter(
     mask: '##',
-    filter: {"#": RegExp(r'[0-9]')},
+    filter: {'#': RegExp(r'[0-9]')},
   );
 
   @override

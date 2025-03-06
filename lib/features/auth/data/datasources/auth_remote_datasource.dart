@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lumimoney_app/core/network/http_client.dart';
 import 'package:lumimoney_app/core/network/api_endpoints.dart';
