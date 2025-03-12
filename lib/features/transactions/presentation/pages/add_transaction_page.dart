@@ -28,7 +28,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
   TransactionType _type = TransactionType.expense;
   TransactionFrequency _frequency = TransactionFrequency.unitary;
   TransactionStatus _status = TransactionStatus.pending;
-  int _totalInstallments = 1;
+  int _totalInstallments = 2;
   String? _selectedPaymentMethodId;
   String? _selectedInvoiceId;
 
@@ -38,6 +38,9 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     _amountController.text = 'R\$ 0,00';
     _installmentsController.text = '2';
+    _amountController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(paymentMethodsControllerProvider.notifier).getPaymentMethods();
     });
@@ -208,9 +211,23 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
 
     final isCreditCard = selectedMethod.type == PaymentMethodType.creditCard;
     
-    // Seleciona a primeira fatura (mais recente) quando carregar as faturas
+    // Seleciona a primeira fatura com vencimento após a data atual
     if (isCreditCard && invoicesState.invoices.isNotEmpty && _selectedInvoiceId == null) {
-      _selectedInvoiceId = invoicesState.invoices.first.id;
+      final now = DateTime.now();
+      final futureInvoices = invoicesState.invoices
+          .where((invoice) => invoice.dueDate.isAfter(now) && !invoice.isClosed);
+      if (futureInvoices.isNotEmpty) {
+        final nextInvoice = futureInvoices.reduce((a, b) => a.dueDate.isBefore(b.dueDate) ? a : b);
+        _selectedInvoiceId = nextInvoice.id;
+      } else {
+        // Se não encontrar faturas futuras abertas, pega a mais recente que não esteja fechada
+        final openInvoices = invoicesState.invoices.where((invoice) => !invoice.isClosed);
+        if (openInvoices.isNotEmpty) {
+          _selectedInvoiceId = openInvoices
+              .reduce((a, b) => a.dueDate.isAfter(b.dueDate) ? a : b)
+              .id;
+        }
+      }
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -554,6 +571,9 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                       if (value == TransactionFrequency.unitary) {
                                         _totalInstallments = 1;
                                         _installmentsController.text = '1';
+                                      } else if (value == TransactionFrequency.installment && _totalInstallments < 2) {
+                                        _totalInstallments = 2;
+                                        _installmentsController.text = '2';
                                       }
                                     });
                                   }
@@ -569,33 +589,156 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
 
                   // Parcelas
                   if (_frequency == TransactionFrequency.installment)
-                    TextFormField(
-                      controller: _installmentsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Número de Parcelas',
-                        border: OutlineInputBorder(),
+                    if (isLargeScreen)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: _totalInstallments < 2 ? 2 : _totalInstallments,
+                              decoration: const InputDecoration(
+                                labelText: 'Número de Parcelas',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: List.generate(499, (index) => index + 2)
+                                  .map((number) => DropdownMenuItem(
+                                        value: number,
+                                        child: Text('$number parcelas'),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    _totalInstallments = value;
+                                    _installmentsController.text = value.toString();
+                                  });
+                                }
+                              },
+                              validator: (value) {
+                                if (value == null || value < 2) {
+                                  return 'Por favor, selecione o número de parcelas';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          if (_amountController.text.isNotEmpty && _amountController.text != 'R\$ 0,00')
+                            Expanded(
+                              child: InputDecorator(
+                                decoration: const InputDecoration(
+                                  labelText: 'Valor da Parcela',
+                                  border: OutlineInputBorder(),
+                                ),
+                                child: Builder(
+                                  builder: (context) {
+                                    final amount = double.parse(_amountController.text
+                                        .replaceAll('R\$', '')
+                                        .replaceAll('.', '')
+                                        .replaceAll(',', '.')
+                                        .trim());
+                                    final installmentValue = amount / _totalInstallments;
+                                    return Container(
+                                      height: 24,
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '$_totalInstallments x ',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            'R\$ ${installmentValue.toStringAsFixed(2).replaceAll('.', ',')}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          DropdownButtonFormField<int>(
+                            value: _totalInstallments < 2 ? 2 : _totalInstallments,
+                            decoration: const InputDecoration(
+                              labelText: 'Número de Parcelas',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: List.generate(499, (index) => index + 2)
+                                .map((number) => DropdownMenuItem(
+                                      value: number,
+                                      child: Text('$number parcelas'),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _totalInstallments = value;
+                                  _installmentsController.text = value.toString();
+                                });
+                              }
+                            },
+                            validator: (value) {
+                              if (value == null || value < 2) {
+                                return 'Por favor, selecione o número de parcelas';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (_amountController.text.isNotEmpty && _amountController.text != 'R\$ 0,00')
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '$_totalInstallments x ',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Builder(
+                                        builder: (context) {
+                                          final amount = double.parse(_amountController.text
+                                              .replaceAll('R\$', '')
+                                              .replaceAll('.', '')
+                                              .replaceAll(',', '.')
+                                              .trim());
+                                          final installmentValue = amount / _totalInstallments;
+                                          return Text(
+                                            'R\$ ${installmentValue.toStringAsFixed(2).replaceAll('.', ',')}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o número de parcelas';
-                        }
-                        final number = int.tryParse(value);
-                        if (number == null || number < 2 || number > 420) {
-                          return 'O número de parcelas deve estar entre 2 e 420';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        final number = int.tryParse(value);
-                        if (number != null) {
-                          setState(() => _totalInstallments = number);
-                        }
-                      },
-                    ),
                   const SizedBox(height: 24),
 
                   // Botão de Salvar
