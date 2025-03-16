@@ -58,29 +58,60 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final selectedMethod = ref.read(paymentMethodsControllerProvider).paymentMethods
+    final selectedMethod = ref
+        .read(paymentMethodsControllerProvider)
+        .paymentMethods
         .firstWhere((method) => method.id == _selectedPaymentMethodId);
     final isCreditCard = selectedMethod.type == PaymentMethodType.creditCard;
 
     final request = TransactionRequest(
       description: _descriptionController.text,
-      amount: double.parse(_amountController.text
-          .replaceAll('R\$', '')
-          .replaceAll('.', '')
-          .replaceAll(',', '.')
-          .trim(),),
+      amount: double.parse(
+        _amountController.text
+            .replaceAll('R\$', '')
+            .replaceAll('.', '')
+            .replaceAll(',', '.')
+            .trim(),
+      ),
       type: _type,
       frequency: _frequency,
       status: isCreditCard ? TransactionStatus.paid : _status,
-      totalInstallments: _frequency == TransactionFrequency.installment ? _totalInstallments : null,
+      totalInstallments: _frequency == TransactionFrequency.installment
+          ? _totalInstallments
+          : null,
       paymentMethod: _selectedPaymentMethodId ?? '',
       creditCardInvoice: _selectedInvoiceId,
       date: DateFormat('dd/MM/yyyy').parse(_dateController.text),
     );
 
-    ref.read(transactionsControllerProvider.notifier).createTransaction(request).then((_) {
+    ref
+        .read(transactionsControllerProvider.notifier)
+        .createTransaction(request)
+        .then((_) {
       if (!mounted) return;
-      
+
+      final state = ref.read(transactionsControllerProvider);
+
+      if (state.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text(state.error!)),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
+      // Atualiza a home
+      ref.read(paymentMethodsControllerProvider.notifier).getPaymentMethods();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -127,7 +158,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -176,9 +208,10 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     });
     Navigator.pop(context);
 
-    final selectedMethod = paymentMethodsState.paymentMethods.firstWhere((method) => method.id == id);
+    final selectedMethod = paymentMethodsState.paymentMethods
+        .firstWhere((method) => method.id == id);
     ref.read(creditCardInvoicesControllerProvider.notifier).clearState();
-    
+
     if (selectedMethod.type == PaymentMethodType.creditCard) {
       ref.read(creditCardInvoicesControllerProvider.notifier).getInvoices(id);
     }
@@ -190,7 +223,7 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     final paymentMethodsState = ref.watch(paymentMethodsControllerProvider);
     final invoicesState = ref.watch(creditCardInvoicesControllerProvider);
     final paymentMethods = paymentMethodsState.paymentMethods;
-    
+
     // Seleciona o primeiro método de pagamento do tipo conta por padrão
     if (_selectedPaymentMethodId == null && paymentMethods.isNotEmpty) {
       final defaultMethod = paymentMethods.firstWhere(
@@ -210,18 +243,22 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
     );
 
     final isCreditCard = selectedMethod.type == PaymentMethodType.creditCard;
-    
+
     // Seleciona a primeira fatura com vencimento após a data atual
-    if (isCreditCard && invoicesState.invoices.isNotEmpty && _selectedInvoiceId == null) {
+    if (isCreditCard &&
+        invoicesState.invoices.isNotEmpty &&
+        _selectedInvoiceId == null) {
       final now = DateTime.now();
-      final futureInvoices = invoicesState.invoices
-          .where((invoice) => invoice.dueDate.isAfter(now) && !invoice.isClosed);
+      final futureInvoices = invoicesState.invoices.where(
+          (invoice) => invoice.dueDate.isAfter(now) && !invoice.isClosed);
       if (futureInvoices.isNotEmpty) {
-        final nextInvoice = futureInvoices.reduce((a, b) => a.dueDate.isBefore(b.dueDate) ? a : b);
+        final nextInvoice = futureInvoices
+            .reduce((a, b) => a.dueDate.isBefore(b.dueDate) ? a : b);
         _selectedInvoiceId = nextInvoice.id;
       } else {
         // Se não encontrar faturas futuras abertas, pega a mais recente que não esteja fechada
-        final openInvoices = invoicesState.invoices.where((invoice) => !invoice.isClosed);
+        final openInvoices =
+            invoicesState.invoices.where((invoice) => !invoice.isClosed);
         if (openInvoices.isNotEmpty) {
           _selectedInvoiceId = openInvoices
               .reduce((a, b) => a.dueDate.isAfter(b.dueDate) ? a : b)
@@ -381,7 +418,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                 lastDate: DateTime(2100),
                               );
                               if (date != null) {
-                                _dateController.text = DateFormat('dd/MM/yyyy').format(date);
+                                _dateController.text =
+                                    DateFormat('dd/MM/yyyy').format(date);
                               }
                             },
                             validator: (value) {
@@ -425,7 +463,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                               lastDate: DateTime(2100),
                             );
                             if (date != null) {
-                              _dateController.text = DateFormat('dd/MM/yyyy').format(date);
+                              _dateController.text =
+                                  DateFormat('dd/MM/yyyy').format(date);
                             }
                           },
                           validator: (value) {
@@ -477,7 +516,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                               border: OutlineInputBorder(),
                             ),
                             items: invoicesState.invoices.map((invoice) {
-                              final dueDate = DateFormat('dd/MM/yyyy').format(invoice.dueDate);
+                              final dueDate = DateFormat('dd/MM/yyyy')
+                                  .format(invoice.dueDate);
                               return DropdownMenuItem(
                                 value: invoice.id,
                                 child: Text(
@@ -559,7 +599,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                             physics: const NeverScrollableScrollPhysics(),
                             crossAxisCount: crossAxisCount,
                             childAspectRatio: 8,
-                            children: TransactionFrequency.values.map((frequency) {
+                            children:
+                                TransactionFrequency.values.map((frequency) {
                               return RadioListTile<TransactionFrequency>(
                                 title: Text(frequency.label),
                                 value: frequency,
@@ -568,10 +609,14 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                   if (value != null) {
                                     setState(() {
                                       _frequency = value;
-                                      if (value == TransactionFrequency.unitary) {
+                                      if (value ==
+                                          TransactionFrequency.unitary) {
                                         _totalInstallments = 1;
                                         _installmentsController.text = '1';
-                                      } else if (value == TransactionFrequency.installment && _totalInstallments < 2) {
+                                      } else if (value ==
+                                              TransactionFrequency
+                                                  .installment &&
+                                          _totalInstallments < 2) {
                                         _totalInstallments = 2;
                                         _installmentsController.text = '2';
                                       }
@@ -595,7 +640,9 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: _totalInstallments < 2 ? 2 : _totalInstallments,
+                              value: _totalInstallments < 2
+                                  ? 2
+                                  : _totalInstallments,
                               decoration: const InputDecoration(
                                 labelText: 'Número de Parcelas',
                                 border: OutlineInputBorder(),
@@ -610,7 +657,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                 if (value != null) {
                                   setState(() {
                                     _totalInstallments = value;
-                                    _installmentsController.text = value.toString();
+                                    _installmentsController.text =
+                                        value.toString();
                                   });
                                 }
                               },
@@ -623,7 +671,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          if (_amountController.text.isNotEmpty && _amountController.text != 'R\$ 0,00')
+                          if (_amountController.text.isNotEmpty &&
+                              _amountController.text != 'R\$ 0,00')
                             Expanded(
                               child: InputDecorator(
                                 decoration: const InputDecoration(
@@ -632,17 +681,20 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                 ),
                                 child: Builder(
                                   builder: (context) {
-                                    final amount = double.parse(_amountController.text
-                                        .replaceAll('R\$', '')
-                                        .replaceAll('.', '')
-                                        .replaceAll(',', '.')
-                                        .trim());
-                                    final installmentValue = amount / _totalInstallments;
+                                    final amount = double.parse(
+                                        _amountController.text
+                                            .replaceAll('R\$', '')
+                                            .replaceAll('.', '')
+                                            .replaceAll(',', '.')
+                                            .trim());
+                                    final installmentValue =
+                                        amount / _totalInstallments;
                                     return Container(
                                       height: 24,
                                       alignment: Alignment.center,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             '$_totalInstallments x ',
@@ -656,7 +708,9 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
                                         ],
@@ -672,7 +726,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                       Column(
                         children: [
                           DropdownButtonFormField<int>(
-                            value: _totalInstallments < 2 ? 2 : _totalInstallments,
+                            value:
+                                _totalInstallments < 2 ? 2 : _totalInstallments,
                             decoration: const InputDecoration(
                               labelText: 'Número de Parcelas',
                               border: OutlineInputBorder(),
@@ -687,7 +742,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                               if (value != null) {
                                 setState(() {
                                   _totalInstallments = value;
-                                  _installmentsController.text = value.toString();
+                                  _installmentsController.text =
+                                      value.toString();
                                 });
                               }
                             },
@@ -698,7 +754,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                               return null;
                             },
                           ),
-                          if (_amountController.text.isNotEmpty && _amountController.text != 'R\$ 0,00')
+                          if (_amountController.text.isNotEmpty &&
+                              _amountController.text != 'R\$ 0,00')
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
                               child: Card(
@@ -716,18 +773,22 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                       ),
                                       Builder(
                                         builder: (context) {
-                                          final amount = double.parse(_amountController.text
-                                              .replaceAll('R\$', '')
-                                              .replaceAll('.', '')
-                                              .replaceAll(',', '.')
-                                              .trim());
-                                          final installmentValue = amount / _totalInstallments;
+                                          final amount = double.parse(
+                                              _amountController.text
+                                                  .replaceAll('R\$', '')
+                                                  .replaceAll('.', '')
+                                                  .replaceAll(',', '.')
+                                                  .trim());
+                                          final installmentValue =
+                                              amount / _totalInstallments;
                                           return Text(
                                             'R\$ ${installmentValue.toStringAsFixed(2).replaceAll('.', ',')}',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           );
                                         },
@@ -759,4 +820,4 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
       ),
     );
   }
-} 
+}

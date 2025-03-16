@@ -8,7 +8,8 @@ class TransactionsTestPage extends ConsumerStatefulWidget {
   const TransactionsTestPage({super.key});
 
   @override
-  ConsumerState<TransactionsTestPage> createState() => _TransactionsTestPageState();
+  ConsumerState<TransactionsTestPage> createState() =>
+      _TransactionsTestPageState();
 }
 
 class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
@@ -42,7 +43,8 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                   itemCount: state.transactions.length,
                   itemBuilder: (context, index) {
                     final transaction = state.transactions[index];
-                    final date = DateFormat('dd/MM/yyyy').format(transaction.date);
+                    final date =
+                        DateFormat('dd/MM/yyyy').format(transaction.date);
                     final amount = NumberFormat.currency(
                       locale: 'pt_BR',
                       symbol: 'R\$',
@@ -62,9 +64,10 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                                   transaction.type == TransactionType.income
                                       ? Icons.arrow_upward
                                       : Icons.arrow_downward,
-                                  color: transaction.type == TransactionType.income
-                                      ? Colors.green
-                                      : Colors.red,
+                                  color:
+                                      transaction.type == TransactionType.income
+                                          ? Colors.green
+                                          : Colors.red,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -79,7 +82,8 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                                   amount,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: transaction.type == TransactionType.income
+                                    color: transaction.type ==
+                                            TransactionType.income
                                         ? Colors.green
                                         : Colors.red,
                                   ),
@@ -98,13 +102,14 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  transaction.paymentMethod.name,
+                                  transaction.paymentMethod?.name ?? '',
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
                                   ),
                                 ),
-                                if (transaction.frequency == TransactionFrequency.installment) ...[
+                                if (transaction.frequency ==
+                                    TransactionFrequency.installment) ...[
                                   const SizedBox(width: 8),
                                   Text(
                                     '${transaction.installmentNumber}/${transaction.totalInstallments}',
@@ -121,7 +126,8 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: transaction.status == TransactionStatus.paid
+                                    color: transaction.status ==
+                                            TransactionStatus.paid
                                         ? Colors.green.withOpacity(0.1)
                                         : Colors.orange.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
@@ -129,7 +135,8 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                                   child: Text(
                                     transaction.status.label,
                                     style: TextStyle(
-                                      color: transaction.status == TransactionStatus.paid
+                                      color: transaction.status ==
+                                              TransactionStatus.paid
                                           ? Colors.green
                                           : Colors.orange,
                                       fontSize: 12,
@@ -147,4 +154,4 @@ class _TransactionsTestPageState extends ConsumerState<TransactionsTestPage> {
                 ),
     );
   }
-} 
+}

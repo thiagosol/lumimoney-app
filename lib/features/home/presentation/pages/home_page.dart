@@ -50,9 +50,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await ref.read(paymentMethodsControllerProvider.notifier).getPaymentMethods();
+          await ref
+              .read(paymentMethodsControllerProvider.notifier)
+              .getPaymentMethods();
         },
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,16 +80,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TransactionsTestPage(),
-                    ),
-                  );
-                },
+                onPressed: () => context.push(AppConstants.transactionsRoute),
                 icon: const Icon(Icons.list),
-                label: const Text('Teste de Transações'),
+                label: const Text('Minhas Transações'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -144,7 +140,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           return Wrap(
             spacing: 16,
             runSpacing: 16,
-            children: accounts.map((account) => _buildAccountCard(account)).toList(),
+            children:
+                accounts.map((account) => _buildAccountCard(account)).toList(),
           );
         }
 
@@ -189,8 +186,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildAccountCard(PaymentMethod account) {
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-    
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
     return SizedBox(
       width: 300,
       child: Card(
@@ -216,9 +214,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildCreditCardCard(PaymentMethod card) {
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final currencyFormat =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     final dateFormat = DateFormat('dd/MM/yyyy');
-    
+
     return SizedBox(
       width: 300,
       child: Card(

@@ -20,6 +20,9 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 flutter run -d chrome --web-port=8000 --dart-define=API_BASE_URL=http://localhost:8080
 
+flutter devices
+flutter run -d RQCX802SHED
+
 flutter build apk --release
 
 📌 Como criar uma keystore

@@ -6,6 +6,7 @@ import 'package:lumimoney_app/features/home/presentation/pages/home_page.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/pages/add_account_page.dart';
 import 'package:lumimoney_app/features/payment_methods/presentation/pages/add_card_page.dart';
 import 'package:lumimoney_app/features/transactions/presentation/pages/add_transaction_page.dart';
+import 'package:lumimoney_app/features/transactions/presentation/pages/transactions_page.dart';
 import 'package:lumimoney_app/shared/constants/app_constants.dart';
 
 final appRouter = GoRouter(
@@ -37,6 +38,14 @@ final appRouter = GoRouter(
         GoRoute(
           path: AppConstants.addTransactionRoute,
           builder: (context, state) => const AddTransactionPage(),
+        ),
+        GoRoute(
+          path: AppConstants.transactionsRoute,
+          builder: (context, state) {
+            final type = state.uri.queryParameters['type'];
+            final id = state.uri.queryParameters['id'];
+            return TransactionsPage(type: type, id: id);
+          },
         ),
       ],
     ),

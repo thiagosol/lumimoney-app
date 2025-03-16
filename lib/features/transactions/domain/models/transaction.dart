@@ -11,10 +11,11 @@ class Transaction {
   final TransactionStatus status;
   final int? installmentNumber;
   final int? totalInstallments;
-  final PaymentMethod paymentMethod;
-  final CreditCardInvoice? creditCardInvoice;
   final String? recurrenceId;
   final DateTime date;
+  final PaymentMethod? paymentMethod;
+  final CreditCardInvoice? creditCardInvoice;
+  final bool isVirtual;
 
   Transaction({
     required this.id,
@@ -25,10 +26,11 @@ class Transaction {
     required this.status,
     this.installmentNumber,
     this.totalInstallments,
-    required this.paymentMethod,
-    this.creditCardInvoice,
     this.recurrenceId,
     required this.date,
+    this.paymentMethod,
+    this.creditCardInvoice,
+    required this.isVirtual,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -36,26 +38,62 @@ class Transaction {
       id: json['id'],
       description: json['description'],
       amount: json['amount'].toDouble(),
-      type: TransactionType.values.firstWhere(
-        (e) => e.value == json['type'],
-        orElse: () => TransactionType.expense,
-      ),
-      frequency: TransactionFrequency.values.firstWhere(
-        (e) => e.value == json['frequency'],
-        orElse: () => TransactionFrequency.unitary,
-      ),
-      status: TransactionStatus.values.firstWhere(
-        (e) => e.value == json['status'],
-        orElse: () => TransactionStatus.pending,
-      ),
+      type: TransactionType.values.firstWhere((e) => e.value == json['type']),
+      frequency: TransactionFrequency.values
+          .firstWhere((e) => e.value == json['frequency']),
+      status:
+          TransactionStatus.values.firstWhere((e) => e.value == json['status']),
       installmentNumber: json['installmentNumber'],
       totalInstallments: json['totalInstallments'],
-      paymentMethod: PaymentMethod.fromJson(json['paymentMethod']),
+      recurrenceId: json['recurrenceId'],
+      date: DateTime.parse(json['date']),
+      paymentMethod: json['paymentMethod'] != null
+          ? PaymentMethod.fromJson(json['paymentMethod'])
+          : null,
       creditCardInvoice: json['creditCardInvoice'] != null
           ? CreditCardInvoice.fromJson(json['creditCardInvoice'])
           : null,
-      recurrenceId: json['recurrenceId'],
-      date: DateTime.parse(json['date']),
+      isVirtual: json['isVirtual'],
     );
   }
-} 
+}
+
+class PaymentMethod {
+  final String id;
+  final String name;
+  final String type;
+
+  PaymentMethod({
+    required this.id,
+    required this.name,
+    required this.type,
+  });
+
+  factory PaymentMethod.fromJson(Map<String, dynamic> json) {
+    return PaymentMethod(
+      id: json['id'],
+      name: json['name'],
+      type: json['type'],
+    );
+  }
+}
+
+class CreditCardInvoice {
+  final String creditCardId;
+  final DateTime dueDate;
+  final double amount;
+
+  CreditCardInvoice({
+    required this.creditCardId,
+    required this.dueDate,
+    required this.amount,
+  });
+
+  factory CreditCardInvoice.fromJson(Map<String, dynamic> json) {
+    return CreditCardInvoice(
+      creditCardId: json['creditCardId'],
+      dueDate: DateTime.parse(json['dueDate']),
+      amount: json['amount'].toDouble(),
+    );
+  }
+}

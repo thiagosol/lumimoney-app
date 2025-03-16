@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:lumimoney_app/core/router/app_router.dart';
 import 'package:lumimoney_app/core/theme/app_theme.dart';
 import 'package:lumimoney_app/core/utils/global_event_bus.dart';
@@ -11,6 +12,7 @@ void main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('userBox');
+  await initializeDateFormatting('pt_BR', null);
 
   runApp(
     const ProviderScope(
