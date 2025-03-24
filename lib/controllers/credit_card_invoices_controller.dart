@@ -29,7 +29,8 @@ class CreditCardInvoicesController
 
     try {
       final response = await httpClient.get(
-          '/credit-card-invoices/payment-method/$paymentMethodId?isClosed=false');
+        '/credit-card-invoices/payment-method/$paymentMethodId?isClosed=false',
+      );
       final List<dynamic> responseList = response.data as List<dynamic>;
       final invoices =
           responseList.map((json) => CreditCardInvoice.fromJson(json)).toList();

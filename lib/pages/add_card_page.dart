@@ -177,8 +177,9 @@ class _AddCardPageState extends ConsumerState<AddCardPage> {
                           : () async {
                               if (_formKey.currentState!.validate()) {
                                 await ref
-                                    .read(paymentMethodsControllerProvider
-                                        .notifier)
+                                    .read(
+                                      paymentMethodsControllerProvider.notifier,
+                                    )
                                     .addCard(
                                       _nameController.text,
                                       double.parse(_getLimitValue()),
@@ -187,8 +188,10 @@ class _AddCardPageState extends ConsumerState<AddCardPage> {
                                     );
                                 if (mounted) {
                                   await ref
-                                      .read(paymentMethodsControllerProvider
-                                          .notifier)
+                                      .read(
+                                        paymentMethodsControllerProvider
+                                            .notifier,
+                                      )
                                       .getPaymentMethods();
                                   if (mounted) {
                                     context.pop();

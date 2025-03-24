@@ -76,17 +76,21 @@ class _AddAccountPageState extends ConsumerState<AddAccountPage> {
                           : () async {
                               if (_formKey.currentState!.validate()) {
                                 await ref
-                                    .read(paymentMethodsControllerProvider
-                                        .notifier)
+                                    .read(
+                                      paymentMethodsControllerProvider.notifier,
+                                    )
                                     .addAccount(
                                       _nameController.text,
                                       MoneyFormatter.parse(
-                                          _balanceController.text),
+                                        _balanceController.text,
+                                      ),
                                     );
                                 if (mounted) {
                                   await ref
-                                      .read(paymentMethodsControllerProvider
-                                          .notifier)
+                                      .read(
+                                        paymentMethodsControllerProvider
+                                            .notifier,
+                                      )
                                       .getPaymentMethods();
                                   if (mounted) {
                                     context.pop();

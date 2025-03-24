@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lumimoney_app/storage/secure_storage.dart';
-import 'package:lumimoney_app/controllers/auth_controller.dart';
 import 'package:lumimoney_app/constants/app_constants.dart';
 import 'dart:html' if (dart.library.io) 'dart:io' as platform;
 

@@ -20,13 +20,15 @@ class PaymentMethodsService {
 
       throw Exception('Falha ao buscar métodos de pagamento');
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ??
-          'Falha ao buscar métodos de pagamento');
+      throw Exception(
+        e.response?.data?['message'] ?? 'Falha ao buscar métodos de pagamento',
+      );
     }
   }
 
   Future<PaymentMethod> createPaymentMethod(
-      PaymentMethodRequest request) async {
+    PaymentMethodRequest request,
+  ) async {
     try {
       final response = await httpClient.post(
         ApiEndpoints.paymentMethods,
@@ -40,7 +42,8 @@ class PaymentMethodsService {
       throw Exception('Falha ao criar método de pagamento');
     } on DioException catch (e) {
       throw Exception(
-          e.response?.data?['message'] ?? 'Falha ao criar método de pagamento');
+        e.response?.data?['message'] ?? 'Falha ao criar método de pagamento',
+      );
     }
   }
 }
