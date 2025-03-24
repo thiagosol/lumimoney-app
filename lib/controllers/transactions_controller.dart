@@ -2,24 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumimoney_app/network/http_client.dart';
 import 'package:lumimoney_app/models/transaction.dart';
 import 'package:lumimoney_app/models/transaction_request.dart';
+import 'package:lumimoney_app/service/transaction_service.dart';
 
 final transactionsControllerProvider =
     StateNotifierProvider<TransactionsController, TransactionsState>((ref) {
   final httpClient = ref.watch(appHttpClientProvider);
-  return TransactionsController(httpClient);
+  final transactionService = TransactionService(httpClient);
+  return TransactionsController(transactionService);
 });
 
 class TransactionsController extends StateNotifier<TransactionsState> {
-  final AppHttpClient httpClient;
+  final TransactionService transactionService;
 
-  TransactionsController(this.httpClient)
+  TransactionsController(this.transactionService)
       : super(const TransactionsState.initial());
 
   Future<void> createTransaction(TransactionRequest request) async {
     state = const TransactionsState.loading();
 
     try {
-      await httpClient.post('/transactions', data: request.toJson());
+      await transactionService.createTransaction(request);
       state = const TransactionsState.success();
     } catch (e) {
       state = TransactionsState.error(e.toString());
@@ -34,19 +36,11 @@ class TransactionsController extends StateNotifier<TransactionsState> {
     state = const TransactionsState.loading();
 
     try {
-      String url = '/transactions/month/$yearMonth';
-      if (type != null) {
-        url += '?type=$type';
-        if (id != null) {
-          url += '&id=$id';
-        }
-      }
-
-      final response = await httpClient.get(url);
-      final transactions = (response.data as List)
-          .map((json) => Transaction.fromJson(json))
-          .toList();
-
+      final transactions = await transactionService.getTransactionsByMonth(
+        yearMonth,
+        type,
+        id,
+      );
       state = TransactionsState.data(transactions);
     } catch (e) {
       state = TransactionsState.error(e.toString());

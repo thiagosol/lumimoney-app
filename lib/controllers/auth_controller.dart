@@ -46,19 +46,6 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> checkAuthState() async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final user = await _authService.getCurrentUser();
-      state = state.copyWith(user: user, isLoading: false, clearError: true);
-    } catch (e) {
-      state = state.copyWith(
-        error: e is AppException ? e.message : e.toString(),
-        isLoading: false,
-      );
-    }
-  }
-
   Future<void> getCurrentUser() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {

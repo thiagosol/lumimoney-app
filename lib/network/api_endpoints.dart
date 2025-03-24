@@ -10,4 +10,10 @@ class ApiEndpoints {
 
   // Payment Methods
   static String get paymentMethods => '$baseUrl/payment-methods';
+
+  // Credit Card Invoices
+  static String get creditCardInvoices => '$baseUrl/credit-card-invoices';
+
+  // Transactions
+  static String get transactions => '$baseUrl/transactions';
 }

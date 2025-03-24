@@ -1,18 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumimoney_app/network/http_client.dart';
 import 'package:lumimoney_app/models/credit_card_invoice.dart';
+import 'package:lumimoney_app/service/credit_card_invoices_service.dart';
 
 final creditCardInvoicesControllerProvider = StateNotifierProvider<
     CreditCardInvoicesController, CreditCardInvoicesState>((ref) {
   final httpClient = ref.watch(appHttpClientProvider);
-  return CreditCardInvoicesController(httpClient);
+  final creditCardInvoicesService = CreditCardInvoicesService(httpClient);
+  return CreditCardInvoicesController(
+    creditCardInvoicesService,
+  );
 });
 
 class CreditCardInvoicesController
     extends StateNotifier<CreditCardInvoicesState> {
-  final AppHttpClient httpClient;
+  final CreditCardInvoicesService creditCardInvoicesService;
 
-  CreditCardInvoicesController(this.httpClient)
+  CreditCardInvoicesController(this.creditCardInvoicesService)
       : super(const CreditCardInvoicesState.initial());
 
   void clearState() {
@@ -26,15 +30,10 @@ class CreditCardInvoicesController
     }
 
     state = const CreditCardInvoicesState.loading();
-
     try {
-      final response = await httpClient.get(
-        '/credit-card-invoices/payment-method/$paymentMethodId?isClosed=false',
+      final invoices = await creditCardInvoicesService.getInvoices(
+        paymentMethodId,
       );
-      final List<dynamic> responseList = response.data as List<dynamic>;
-      final invoices =
-          responseList.map((json) => CreditCardInvoice.fromJson(json)).toList();
-      invoices.sort((a, b) => b.dueDate.compareTo(a.dueDate));
       state = CreditCardInvoicesState.success(invoices);
     } catch (e) {
       state = CreditCardInvoicesState.error(e.toString());

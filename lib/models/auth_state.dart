@@ -1,4 +1,4 @@
-import 'package:lumimoney_app/models/user_model.dart';
+import 'package:lumimoney_app/models/user.dart';
 
 class AuthState {
   final UserModel? user;
