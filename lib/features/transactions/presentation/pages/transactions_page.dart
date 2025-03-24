@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method.dart';
 import 'package:lumimoney_app/features/transactions/domain/enums/transaction_enums.dart';
 import 'package:lumimoney_app/features/transactions/presentation/controllers/transactions_controller.dart';
 import 'package:lumimoney_app/shared/constants/app_constants.dart';
@@ -34,8 +33,10 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage>
     // Gera lista de meses (6 meses para trás e 12 para frente)
     final now = DateTime.now();
     final currentMonth = DateTime(now.year, now.month);
-    _months = List.generate(19,
-        (index) => DateTime(currentMonth.year, currentMonth.month - 6 + index));
+    _months = List.generate(
+      19,
+      (index) => DateTime(currentMonth.year, currentMonth.month - 6 + index),
+    );
 
     // Define o índice inicial como o mês atual (índice 6)
     _initialIndex = 6;
@@ -84,9 +85,11 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage>
           controller: _tabController,
           isScrollable: true,
           tabs: _months
-              .map((month) => Tab(
-                    text: monthFormat.format(month).toUpperCase(),
-                  ))
+              .map(
+                (month) => Tab(
+                  text: monthFormat.format(month).toUpperCase(),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -138,7 +141,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage>
                           Text(transaction.paymentMethod!.name),
                         if (transaction.installmentNumber != null)
                           Text(
-                              '${transaction.installmentNumber}/${transaction.totalInstallments}'),
+                            '${transaction.installmentNumber}/${transaction.totalInstallments}',
+                          ),
                       ],
                     ),
                     trailing: Text(

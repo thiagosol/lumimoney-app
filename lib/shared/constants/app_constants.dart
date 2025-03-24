@@ -11,7 +11,6 @@ class AppConstants {
   // Rotas
   static const String homeRoute = '/';
   static const String loginRoute = '/login';
-  static const String registerRoute = '/register';
   static const String transactionsRoute = '/transactions';
   static const String addAccountRoute = '/add-account';
   static const String addCardRoute = '/add-card';

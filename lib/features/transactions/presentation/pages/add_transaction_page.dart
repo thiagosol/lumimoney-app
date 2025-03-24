@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method.dart';
@@ -250,7 +249,8 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
         _selectedInvoiceId == null) {
       final now = DateTime.now();
       final futureInvoices = invoicesState.invoices.where(
-          (invoice) => invoice.dueDate.isAfter(now) && !invoice.isClosed);
+        (invoice) => invoice.dueDate.isAfter(now) && !invoice.isClosed,
+      );
       if (futureInvoices.isNotEmpty) {
         final nextInvoice = futureInvoices
             .reduce((a, b) => a.dueDate.isBefore(b.dueDate) ? a : b);
@@ -648,10 +648,12 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                 border: OutlineInputBorder(),
                               ),
                               items: List.generate(499, (index) => index + 2)
-                                  .map((number) => DropdownMenuItem(
-                                        value: number,
-                                        child: Text('$number parcelas'),
-                                      ))
+                                  .map(
+                                    (number) => DropdownMenuItem(
+                                      value: number,
+                                      child: Text('$number parcelas'),
+                                    ),
+                                  )
                                   .toList(),
                               onChanged: (value) {
                                 if (value != null) {
@@ -682,11 +684,12 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                 child: Builder(
                                   builder: (context) {
                                     final amount = double.parse(
-                                        _amountController.text
-                                            .replaceAll('R\$', '')
-                                            .replaceAll('.', '')
-                                            .replaceAll(',', '.')
-                                            .trim());
+                                      _amountController.text
+                                          .replaceAll('R\$', '')
+                                          .replaceAll('.', '')
+                                          .replaceAll(',', '.')
+                                          .trim(),
+                                    );
                                     final installmentValue =
                                         amount / _totalInstallments;
                                     return Container(
@@ -733,10 +736,12 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                               border: OutlineInputBorder(),
                             ),
                             items: List.generate(499, (index) => index + 2)
-                                .map((number) => DropdownMenuItem(
-                                      value: number,
-                                      child: Text('$number parcelas'),
-                                    ))
+                                .map(
+                                  (number) => DropdownMenuItem(
+                                    value: number,
+                                    child: Text('$number parcelas'),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (value) {
                               if (value != null) {
@@ -774,11 +779,12 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
                                       Builder(
                                         builder: (context) {
                                           final amount = double.parse(
-                                              _amountController.text
-                                                  .replaceAll('R\$', '')
-                                                  .replaceAll('.', '')
-                                                  .replaceAll(',', '.')
-                                                  .trim());
+                                            _amountController.text
+                                                .replaceAll('R\$', '')
+                                                .replaceAll('.', '')
+                                                .replaceAll(',', '.')
+                                                .trim(),
+                                          );
                                           final installmentValue =
                                               amount / _totalInstallments;
                                           return Text(

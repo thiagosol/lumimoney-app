@@ -29,8 +29,8 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
 
   Future<void> _checkAuth() async {
     if (!_initialized) {
-      _initialized = true;
       await ref.read(authControllerProvider.notifier).checkAuthState();
+      _initialized = true;
     }
   }
 

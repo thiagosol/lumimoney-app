@@ -26,8 +26,11 @@ class TransactionsController extends StateNotifier<TransactionsState> {
     }
   }
 
-  Future<void> getTransactionsByMonth(String yearMonth,
-      [String? type, String? id]) async {
+  Future<void> getTransactionsByMonth(
+    String yearMonth, [
+    String? type,
+    String? id,
+  ]) async {
     state = const TransactionsState.loading();
 
     try {

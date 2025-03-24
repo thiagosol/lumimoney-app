@@ -33,12 +33,9 @@ class AppHttpClient {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isAuthRoute = _isAuthenticationRoute(options.path);
-    if (!isAuthRoute) {
-      final token = await SecureStorage.getToken();
-      if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
+    final token = await SecureStorage.getToken();
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
     }
     handler.next(options);
   }
@@ -47,18 +44,10 @@ class AppHttpClient {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final isAuthRoute = _isAuthenticationRoute(err.requestOptions.path);
-    if (!isAuthRoute &&
-        (err.response?.statusCode == 401 || err.response?.statusCode == 403)) {
+    if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
       _handleUnauthorized();
     }
     handler.next(err);
-  }
-
-  bool _isAuthenticationRoute(String path) {
-    return path == ApiEndpoints.login ||
-        path == ApiEndpoints.register ||
-        path == ApiEndpoints.googleLogin;
   }
 
   Future<Response<T>> get<T>(

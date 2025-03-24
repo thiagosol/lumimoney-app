@@ -1,5 +1,3 @@
-import 'package:lumimoney_app/features/payment_methods/domain/models/payment_method.dart';
-import 'package:lumimoney_app/features/payment_methods/domain/models/credit_card_invoice.dart';
 import 'package:lumimoney_app/features/transactions/domain/enums/transaction_enums.dart';
 
 class Transaction {
