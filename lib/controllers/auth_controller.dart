@@ -1,8 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lumimoney_app/constants/app_constants.dart';
 import 'package:lumimoney_app/exceptions/app_exception.dart';
 import 'package:lumimoney_app/network/http_client.dart';
 import 'package:lumimoney_app/models/user.dart';
 import 'package:lumimoney_app/service/auth_service.dart';
+import 'package:lumimoney_app/storage/secure_storage.dart';
+import 'package:flutter/material.dart';
 
 class AuthState {
   final UserModel? user;
@@ -34,11 +39,36 @@ class AuthController extends StateNotifier<AuthState> {
 
   AuthController(this._authService) : super(AuthState());
 
-  Future<void> login() async {
+  Future<void> login(BuildContext context) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      await _authService.login();
+      final token = await _authService.login();
+      if (token != null) {
+        SecureStorage.saveToken(token);
+        context.go(AppConstants.homeRoute);
+      }
     } catch (e) {
+      if (kDebugMode) {
+        print('error: $e');
+      }
+      state = state.copyWith(
+        error: e is AppException ? e.message : e.toString(),
+        isLoading: false,
+      );
+    }
+  }
+
+  Future<void> loginWebResult(BuildContext context) async {
+    try {
+      final token = await _authService.loginWebResult();
+      if (token != null) {
+        SecureStorage.saveToken(token);
+        context.go(AppConstants.homeRoute);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('error: $e');
+      }
       state = state.copyWith(
         error: e is AppException ? e.message : e.toString(),
         isLoading: false,

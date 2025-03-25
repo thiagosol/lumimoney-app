@@ -31,7 +31,7 @@ class LoginPage extends ConsumerWidget {
                   const SizedBox(height: 32),
                   FilledButton(
                     onPressed: () {
-                      ref.read(authControllerProvider.notifier).login();
+                      ref.read(authControllerProvider.notifier).login(context);
                     },
                     child: const Text('Entrar'),
                   ),

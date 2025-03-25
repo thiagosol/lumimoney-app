@@ -1,20 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:lumimoney_app/network/http_client.dart';
 import 'package:lumimoney_app/exceptions/app_exception.dart';
+import 'package:lumimoney_app/service/openid/io.dart'
+    if (dart.library.js_interop) 'package:lumimoney_app/service/openid/browser.dart';
+
 import 'package:lumimoney_app/storage/secure_storage.dart';
 import 'package:lumimoney_app/models/user.dart';
 import 'package:lumimoney_app/network/api_endpoints.dart';
-import 'package:openid_client/openid_client_browser.dart';
+import 'package:openid_client/openid_client.dart';
 
 class AuthService {
   final AppHttpClient client;
 
   Client? _openidClient;
-  Authenticator? _openidAuthenticator;
 
   AuthService(this.client);
 
-  static const String _clientId = 'lumimoney';
+  static const String _clientId = 'lumimoney-app';
   static const List<String> _scopes = ['openid', 'email', 'profile'];
 
   Future<void> _initializeClient() async {
@@ -25,42 +29,33 @@ class AuthService {
   }
 
   Future<String?> login() async {
+    if (kIsWeb) {
+      return await loginWeb();
+    } else {
+      return await loginApp();
+    }
+  }
+
+  Future<String?> loginWeb() async {
     await _initializeClient();
-    if (_openidClient == null) return null;
-
-    if (!kIsWeb) {
-      throw UnsupportedError('Este fluxo só é suportado na web');
-    }
-
-    _openidAuthenticator = Authenticator(
-      _openidClient!,
-      scopes: _scopes,
-    );
-
-    final credential = await _openidAuthenticator!.credential;
-
-    if (credential == null) {
-      _openidAuthenticator!.authorize();
-      return null;
-    }
-
-    final tokenResponse = await credential.getTokenResponse();
-    if (tokenResponse.accessToken != null) {
-      await SecureStorage.saveToken(tokenResponse.accessToken!);
-      return tokenResponse.accessToken;
-    }
-
+    await authenticate(_openidClient!, scopes: _scopes);
     return null;
   }
 
-  Future<void> saveToken(String token) async {
-    await SecureStorage.saveToken(token);
+  Future<String?> loginWebResult() async {
+    await _initializeClient();
+    var credential = await getRedirectResult(_openidClient!, scopes: _scopes);
+    return (await credential?.getTokenResponse())?.accessToken;
+  }
+
+  Future<String?> loginApp() async {
+    await _initializeClient();
+    var credential = await authenticate(_openidClient!, scopes: _scopes);
+    return (await credential.getTokenResponse()).accessToken;
   }
 
   Future<void> logout() async {
-    await SecureStorage.clearAll();
-    _openidClient = null;
-    _openidAuthenticator = null;
+    SecureStorage.clearAll();
   }
 
   Future<UserModel> getCurrentUser() async {

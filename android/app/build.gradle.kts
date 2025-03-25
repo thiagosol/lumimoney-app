@@ -14,7 +14,7 @@ if (keystoreFile.exists()) {
 
 android {
     namespace = "com.thiagosol.lumimoney_app"
-    compileSdk = 34 // flutter.compileSdkVersion
+    compileSdk = 35 // flutter.compileSdkVersion
     ndkVersion = "27.0.12077973" // flutter.ndkVersion
 
     compileOptions {
@@ -32,7 +32,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 21 // flutter.minSdkVersion
-        targetSdk = 34 // flutter.targetSdkVersion
+        targetSdk = 35 // flutter.targetSdkVersion
         versionCode = 1 // flutter.versionCode
         versionName = "1.0.0" // flutter.versionName
         manifestPlaceholders["appAuthRedirectScheme"] = "com.googleusercontent.apps.267276050562-jeiehlu6e8k7i0a31379q0i8rhdemd8h"
